@@ -321,6 +321,10 @@ public class GameScreen implements Screen {
 		
 		// One check for dead
 		checkKill();
+		
+		for (int i = 0; i < squares.size; i++) {
+			if (squares.get(i).hp <= 0) squares.removeIndex(i);
+		}
 	}
 	
 	// Update_over - called while game is over
@@ -707,7 +711,6 @@ public class GameScreen implements Screen {
 					else if (mommaRaveCube) mrcDieSound.play(0.75f);
 					else squareDieSound.play(0.75f);
 				}
-				squares.removeIndex(squares.indexOf(this, false));
 				blood.add(new Point(hitBox.getMin().x, hitBox.getMin().y));
 			}
 			else nudge();
@@ -841,6 +844,7 @@ public class GameScreen implements Screen {
 			case Genocide:
 				genocideSound.play();
 				// Harm all squares
+				Iterator<Square> iter = squares.iterator();
 				for (int i = 0; i < squares.size; i++) {
 					Square square = squares.get(i);
 					square.hit(true);
