@@ -1,0 +1,49 @@
+CHANGELOG
+
+v0.1.1
+
+ * Entering the program again when lost no longer replays the losing sound
+ 
+v0.1.2
+
+ * Nerfed yellow / special / AoE powerup.
+ * Added gore mode for Rev.
+ * Reduced hitbox for Circle.
+ * Added Momma Rave Cube.
+ * Removed bullet out of bounds array exception bug.
+ * Press any key to begin.
+ * Prevented squares from spawning on top of each other.  Except for MRCs.
+ 
+v0.1.3
+
+ * Added ineffectual loading screen
+ * Added MRC spawn and die SFX
+ * Difficulty gradient added because Cameron said it was too easy.
+ * Code optimisations
+ 
+ v0.1.4
+ 
+ * Restricted powerup spawns to inside the play zone
+ * Increased circle acceleration speed for greater control
+ * Rate of Fire (red) powerup now times out
+ * Implemented competent pause screen
+ * Larger initial screen - now 1024*768
+ * Code optimisations
+ * Fixed bugs arising from code optimisations
+ 
+ v0.1.5
+ 
+ * Optimised MRC spawning
+ * MRCs cannot cross each other
+ * Actually changed acceleration amount rather than max speed.
+ * Circle colour changes to match most recent powerup
+ * Increase all outline thickness to mask laziness at hitbox
+ * Increased powerup size
+ * Increased screen size - now 1280*800
+ * Increased bullet speed
+ * Optimised bullet code
+ * Transparent pause menu
+ * Increased knockback amount for Rave Cubes
+ * Decreased spawn frequency for difficulty concerns
+ * Adjusted yellow spray direction to centre on cursor
+ * Code optimisations
