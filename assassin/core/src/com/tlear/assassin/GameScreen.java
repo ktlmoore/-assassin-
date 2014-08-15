@@ -1,6 +1,8 @@
 package com.tlear.assassin;
 
 import java.util.Iterator;
+import java.util.Queue;
+import java.util.Stack;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -71,7 +73,6 @@ public class GameScreen implements Screen {
 	
 	private float RoF; // Rate of Fire
 	private boolean AoEon; // AoE shot on?
-	
 
 	// Time
 	private int time;
@@ -323,7 +324,7 @@ public class GameScreen implements Screen {
 		checkKill();
 		
 		for (int i = 0; i < squares.size; i++) {
-			if (squares.get(i).hp <= 0) squares.removeIndex(i);
+			if (squares.get(i).hp <= 0) squares.get(i).kill();
 		}
 	}
 	
@@ -385,6 +386,10 @@ public class GameScreen implements Screen {
 			// Squares
 			for(Square square: squares) {
 				square.render();
+				shapeRenderer.begin(ShapeType.Line);
+				shapeRenderer.setColor(Color.GREEN);
+				shapeRenderer.line(square.hitBox.getCenter(), circle.centre());
+				shapeRenderer.end();
 			}
 			shapeRenderer.end();
 			
@@ -618,6 +623,7 @@ public class GameScreen implements Screen {
 		int maxhp;
 		float maxv = 0.9f;
 		long lastSpawnCube;
+		boolean stopped;
 		
 		// Vectors
 		Vector3 dir;
@@ -636,6 +642,7 @@ public class GameScreen implements Screen {
 			dir = circle.centre().cpy().sub(hitBox.getCenter()).nor().scl(speed);
 			maxSpeed = speed;
 			lastSpawnCube = 0;
+			stopped = false;
 		}
 		
 		Square(float x, float y, float s) {
@@ -645,8 +652,10 @@ public class GameScreen implements Screen {
 			maxhp = hp;
 			hitBox = new BoundingBox(new Vector3(x, y, 0), new Vector3(x + size, y + size, size));
 			v = new Vector3(0, 0, 0);
+			speed = s;
 			dir = circle.centre().cpy().sub(hitBox.getCenter()).nor().scl(speed);
 			maxSpeed = speed;
+			stopped = false;
 		}
 		
 		// Move the square toward the circle, slowing to avoid other squares
@@ -659,43 +668,32 @@ public class GameScreen implements Screen {
 			}
 		}
 		
-		void moveBy(int scl) {
-			// Amount to scale by to avoid other squares
-			float scale = scl;
-			
-			// Direction to circle, normalised and scaled by the speed
-			dir = circle.centre().sub(hitBox.getCenter()).nor().scl(speed * v.len());
-			
-			Vector3 min = hitBox.getMin();
-			Vector3 max = hitBox.getMax();
-					
-			Iterator<Square> iter = squares.iterator();
-			
-			// Check if we hit any other squares with the given trajectory
-			while(iter.hasNext()) {
-				Square square = iter.next();
-				if (!square.equals(this) && ((mommaRaveCube && square.mommaRaveCube) || (!mommaRaveCube && !square.mommaRaveCube))) {
-					BoundingBox target = new BoundingBox(min.cpy().add(dir.cpy().scl(scale)), max.cpy().add(dir.cpy().scl(scale)));
-					while (square.hitBox.intersects(target) && scale > 0) {
-						// Slow down to avoid other squares
-						scale = Math.max(0, scale - 0.125f);
-						target.set(min.cpy().add(dir.cpy().scl(scale)), max.cpy().add(dir.cpy().scl(scale)));
-					}
-				}
-			}
-			
-			// Scale by found value then move
-			v.scl(scale);
-			dir.scl(scale);
-			hitBox.set(min.add(dir), max.add(dir));
-		}
-		
 		// Accelerate in the right direction
 		void accel() {
 			if (dir.x > 0) v.x = Math.min(v.x + 0.025f, maxv);
 			else if (dir.x < 0) v.x = Math.max(v.x - 0.025f,  -maxv);
 			if (dir.y > 0) v.y = Math.min(v.y + 0.025f, maxv);
 			else if (dir.y < 0) v.y = Math.max(v.x - 0.025f, -maxv);
+		}
+		
+		// Move by a factor of scale
+		void moveBy(int scl) {
+			int n = 0;
+			dir = circle.centre().cpy().sub(hitBox.getCenter()).nor().scl(v.len() * speed / 20);
+			dir.scl(scl);
+			boolean canMove = true;
+			while(canMove && n < 20) {
+				for (int i = 0; i < squares.size; i++) {
+					Square square = squares.get(i);
+					if (!square.equals(this) && ((square.mommaRaveCube && !mommaRaveCube) || (!square.mommaRaveCube && mommaRaveCube) || (square.mommaRaveCube && mommaRaveCube)) && square.hitBox.intersects(hitBox) && (square.hitBox.getCenter().dst(circle.centre()) < hitBox.getCenter().dst(circle.centre()))) canMove = false;
+				}
+				if (canMove) hitBox.set(hitBox.getMin().add(dir), hitBox.getMax().add(dir));
+				n++;
+			}
+		}
+		
+		float avoid() {
+			return 1.0f;
 		}
 		
 		// Nudge the square back a little
@@ -719,6 +717,11 @@ public class GameScreen implements Screen {
 			score += 5;
 		}
 		
+		void kill() {
+			
+			squares.removeIndex(squares.indexOf(this, false));
+		}
+		
 		void render() {
 			shapeRenderer.begin(ShapeType.Filled);
 			Vector3 s = hitBox.getMin();
@@ -740,6 +743,12 @@ public class GameScreen implements Screen {
 				shapeRenderer.rect(s.x+2, s.y+2, size-4, size-4);
 			}
 			shapeRenderer.end();
+		}
+		
+		boolean isBetween(Vector3 a, Vector3 b) {
+			Ray r1 = new Ray(a, b);
+			Ray r2 = new Ray(b, r1.direction);
+			return (intersector.intersectRayBounds(r1, hitBox, null) && !intersector.intersectRayBounds(r2, hitBox, null));
 		}
 	}
 	

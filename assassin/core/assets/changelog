@@ -54,3 +54,4 @@ v0.1.3
   * Increased difficulty slightly.
   * Changed outline colour of powerups.
   * Changed draw order to have squares over powerups.
+  * Updated square path finding to prevent them from stopping whenever they touch
