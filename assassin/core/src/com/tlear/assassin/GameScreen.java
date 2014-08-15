@@ -291,7 +291,7 @@ public class GameScreen implements Screen {
 		
 		/** Entity spawning **/
 		// Square spawning
-		if (TimeUtils.nanoTime() - lastSpawnTime > 600000000 * (1 - (1 / (50000 - score)))) spawnSquare(null, 0.0f);
+		if (TimeUtils.nanoTime() - lastSpawnTime > 550000000 * (1 - (1 / (50000 - score)))) spawnSquare(null, 0.0f);
 		// Power up spawning
 		if (TimeUtils.nanoTime() - lastPowerUpSpawnTime > 6000000000L) spawnPowerUp();
 		
@@ -352,13 +352,15 @@ public class GameScreen implements Screen {
 			
 			/** Order:
 			 *  Background fill
-			 *  Bloodmode
+			 *  Powerups
 			 *  Bullet fill
 			 *  Player line
 			 *  Player fill
 			 *  Squares line
 			 *  Squares fill
 			 *  Crosshair lines
+			 *  Bloodmode
+			 *  Pause screen
 			 **/
 			
 			// Background
@@ -366,6 +368,11 @@ public class GameScreen implements Screen {
 			shapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
 			shapeRenderer.rect(50, 50, windowWidth - 100, windowHeight - 100);
 			shapeRenderer.end();
+			
+			// Powerups
+			for (PowerUp powerup : powerups) {
+				powerup.render();
+			}
 			
 			// Bullets
 			for(Bullet bullet: bullets) {
@@ -383,11 +390,6 @@ public class GameScreen implements Screen {
 			
 			// Cursor
 			cursor.render();
-			
-			// Powerups
-			for (PowerUp powerup : powerups) {
-				powerup.render();
-			}
 			
 			// Game over information
 			if (state == GAME_OVER) {
@@ -864,7 +866,7 @@ public class GameScreen implements Screen {
 		
 		void render() {
 			shapeRenderer.begin(ShapeType.Filled);
-			shapeRenderer.setColor(Color.BLACK);
+			shapeRenderer.setColor(Color.WHITE);
 			shapeRenderer.circle(pos.x + size / 2, pos.y + size / 2, size / 2 + 2);
 			shapeRenderer.setColor(colour);
 			shapeRenderer.circle(pos.x + size / 2, pos.y + size / 2, (size / 2) - 2);
